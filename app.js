@@ -1,31 +1,56 @@
-var canvas = document.createElement('canvas');
-var ctx = canvas.getContext('2d');
-var bingo = createBingo();
-var table = bingo.querySelector('table');
+main();
 
-var domUrl = window.URL || window.webkitURL || window;
-var img = new Image();
-var data = [
-  '<svg xmlns="http://www.w3.org/2000/svg" width="', table.offsetWidth, '" height="', table.offsetHeight, '">',
-    '<foreignObject width="100%" height="100%">',
-      '<div xmlns="http://www.w3.org/1999/xhtml">',
-        bingo.innerHTML,
-      '</div>',
-    '</foreignObject>' +
-  '</svg>'
-].join('');
-var svg = new Blob([data], {type: 'image/svg+xml;charset=utf-8'});
-var url = domUrl.createObjectURL(svg);
-document.body.appendChild(canvas);
+function main() {
+  var bingo = createBingo();
+  var table = bingo.querySelector('table');
 
-img.src = url;
-img.onload = function () {
-  ctx.drawImage(img, 0, 0);
-  domUrl.revokeObjectURL(url);
+  // Sometimes canvas gets cut off at the bottom
+  table.style.height = table.offsetHeight + 5 + 'px';
+
+  var canvas = document.createElement('canvas');
+  var ctx = canvas.getContext('2d');
+  canvas.width = table.offsetWidth;
+  canvas.height = table.offsetHeight;
+
+  var svg = makeSvg(table);
+  var svgString = new XMLSerializer().serializeToString(svg);
   document.body.removeChild(bingo);
+
+  var domUrl = window.URL || window.webkitURL || window;
+  var img = new Image();
+  var svgBlob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
+  var url = domUrl.createObjectURL(svgBlob);
+  document.body.appendChild(canvas);
+
+  img.src = url;
+  img.onload = function () {
+    ctx.drawImage(img, 0, 0);
+    domUrl.revokeObjectURL(url);
+  }
 }
-canvas.width = table.offsetWidth;
-canvas.height = table.offsetHeight;
+
+function makeSvg(content) {
+  var d = document;
+
+  var ns = 'http://www.w3.org/2000/svg';
+
+  var svg = d.createElementNS(ns, 'svg');
+  svg.setAttribute('width', content.offsetWidth);
+  svg.setAttribute('height', content.offsetHeight);
+
+  var fo = d.createElementNS(ns, 'foreignObject');
+  fo.setAttribute('width', '100%');
+  fo.setAttribute('height', '100%');
+  svg.appendChild(fo);
+
+  var div = d.createElement('div');
+  div.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+  div.appendChild(content);
+  fo.appendChild(div);
+
+  return svg;
+}
+
 
 function createBingo() {
   var d = document;
