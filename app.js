@@ -1,7 +1,7 @@
 main();
 
 function main() {
-  var bingo = createBingo();
+  var bingo = createBingo(['some', 'dummy', 'values']);
   var table = bingo.querySelector('table');
 
   // Sometimes canvas gets cut off at the bottom
@@ -51,8 +51,18 @@ function makeSvg(content) {
   return svg;
 }
 
+// http://stackoverflow.com/a/12646864/1887090
+function shuffleArray(array) {
+  for (var i = array.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+  return array;
+}
 
-function createBingo() {
+function createBingo(inputItems) {
   var d = document;
 
   var table = d.createElement('table');
@@ -60,25 +70,29 @@ function createBingo() {
   table.appendChild(tbody);
   table.style.borderCollapse = 'collapse';
 
+  // This stuff should really be configurable. But nah.
   var maxRows = 5;
   var maxCols = 5;
-
   var color = '#ffafa6';
   var cellSize = 150;
   var cellPadding = 10;
   var maxLineHeight = 50;
 
   var cellSizeWithPadding = cellSize - cellPadding * 2;
+  var emptyCell = [Math.floor(maxRows / 2), Math.floor(maxCols / 2)];
+  var paddedItems = new Array(maxRows * maxCols - inputItems.length - 1)
+    .concat(inputItems.slice());
+  var items = shuffleArray(paddedItems);
 
   var container = d.createElement('div');
   container.appendChild(table);
   d.body.appendChild(container);
 
-  for (var row=0; row<maxRows; row++) {
+  for (var row = 0; row < maxRows; row++) {
     var tr = d.createElement('tr');
     tbody.appendChild(tr);
 
-    for (var col=0; col<maxCols; col++) {
+    for (var col = 0; col < maxCols; col++) {
       var td = d.createElement('td');
       td.style.border = '8px solid ' + color;
 
@@ -96,13 +110,13 @@ function createBingo() {
       td.appendChild(cell);
       tr.appendChild(td);
 
-      if (row == Math.floor(maxRows / 2) && col == Math.floor(maxCols/2)) {
+      if (row == emptyCell[0] && col == emptyCell[1]) {
         span.style.font = 'bold '+ maxLineHeight + 'px sans';
         span.innerHTML = "FREE";
         td.style.color = '#ffffff';
         td.style.background = color;
       } else {
-        span.innerHTML = Array(Math.floor(Math.random() * 10) + 2).join('blah ') + (row*5 + col + 1);
+        span.innerHTML = items.pop() || '';
 
         for (var size = maxLineHeight; size > 1; size--) {
           span.style.fontSize = size + 'px';
@@ -119,3 +133,4 @@ function createBingo() {
 
   return container;
 }
+
