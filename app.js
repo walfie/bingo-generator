@@ -2,7 +2,7 @@ var button = document.querySelector('.js-submit');
 var input = document.querySelector('.js-input');
 var numInputs = document.querySelector('.js-numInputs');
 
-(function() {
+(function init() {
   var storedInputString = localStorage.inputs;
   var stored = [];
   try {
@@ -16,13 +16,13 @@ var numInputs = document.querySelector('.js-numInputs');
   } else {
     localStorage.inputs = [];
   }
+
+  updateNumInputs();
 }());
 
 generate(getInputs());
 
-input.addEventListener('keyup', throttle(function() {
-  numInputs.innerHTML = getInputs().length;
-}, 100));
+input.addEventListener('keyup', throttle(updateNumInputs));
 
 button.addEventListener('click', function(e) {
   var inputs = getInputs();
@@ -31,6 +31,10 @@ button.addEventListener('click', function(e) {
   e.preventDefault();
   return false;
 });
+
+function updateNumInputs() {
+  numInputs.innerHTML = getInputs().length;
+}
 
 function getInputs() {
   return input.value
