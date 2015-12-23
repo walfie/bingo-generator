@@ -25,6 +25,9 @@ var fontOptions = [
 
 (function init() {
   titleInput.value = localStorage.titleInput || '';
+  bgColorInput.value = localStorage.bgColorInput || bgColorInput.value;
+  borderColorInput.value = localStorage.borderColorInput || borderColorInput.value;
+  textColorInput.value = localStorage.textColorInput || textColorInput.value;
 
   var stored = [];
   try {
@@ -78,11 +81,11 @@ var fontOptions = [
     .addEventListener('click', onClickShuffle(true));
   document.querySelector('.js-restore-defaults')
     .addEventListener('click', function() {
-      var itemInputs = localStorage.itemInputs;
-      var title = localStorage.title;
+      var items = localStorage.itemInputs;
+      var title = localStorage.titleInput;
       localStorage.clear();
-      localStorage.title = title;
-      localStorage.itemInputs = itemInputs;
+      localStorage.titleInput = title;
+      localStorage.itemInputs = items;
       document.location.reload();
     });
 
@@ -197,6 +200,7 @@ function createBingo(container, titleText, inputItems, fontFamily, textColor, bg
 
   var th = d.createElement('th');
   th.innerHTML = titleText;
+  th.style.padding = '5px';
   th.style.fontSize = maxLineHeight + 'px';
   th.style.fontWeight = 'bold';
   th.style.background = bgColor;
