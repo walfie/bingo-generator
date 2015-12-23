@@ -291,3 +291,13 @@ function shuffleArray(array) {
   return array;
 }
 
+var sc_project=10752098, sc_invisible=1, sc_security="277c4b45";
+(function() {
+  var sc = document.createElement('script');
+  sc.async = true;
+  var subdomain = ("https:" == document.location.protocol) ? 'secure' : 'www';
+  sc.src = 'http://' + subdomain + '.statcounter.com/counter/counter.js';
+  var s = document.querySelector('script');
+  s.parentNode.insertBefore(sc, s);
+}());
+
