@@ -2,6 +2,7 @@ var itemInputs = document.querySelector('.js-input-items');
 var titleInput = document.querySelector('.js-input-title');
 var numInputs = document.querySelector('.js-numInputs');
 var bgColorInput = document.querySelector('.js-input-bgColor');
+var borderColorInput = document.querySelector('.js-input-borderColor');
 var textColorInput = document.querySelector('.js-input-textColor');
 
 var fontOptions = [
@@ -46,7 +47,8 @@ var fontOptions = [
       getItems(),
       fontInput.value,
       textColorInput.value,
-      bgColorInput.value
+      bgColorInput.value,
+      borderColorInput.value
     );
   }
 
@@ -62,6 +64,7 @@ var fontOptions = [
       localStorage.fontInput = fontInput.value;
       localStorage.textColorInput = textColorInput.value;
       localStorage.bgColorInput = bgColorInput.value;
+      localStorage.borderColorInput = borderColorInput.value;
       localStorage.itemInputs = JSON.stringify(items);
       generateFromInputs();
       e.preventDefault();
@@ -109,10 +112,10 @@ function getItems() {
     .filter(function(x) { return x.trim() != ''; });
 }
 
-function generate(title, items, font, textColor, bgColor) {
+function generate(title, items, font, textColor, bgColor, borderColor) {
   var container = document.querySelector('.js-tmpOutput');
 
-  var bingo = createBingo(container, title, items, font, textColor, bgColor);
+  var bingo = createBingo(container, title, items, font, textColor, bgColor, borderColor);
   var table = bingo.querySelector('table');
 
   // Sometimes canvas gets cut off at the bottom
@@ -177,7 +180,7 @@ function makeSvg(content) {
   return svg;
 }
 
-function createBingo(container, titleText, inputItems, fontFamily, textColor, bgColor) {
+function createBingo(container, titleText, inputItems, fontFamily, textColor, bgColor, borderColor) {
   var d = document;
 
   // This stuff should really be configurable. But nah.
@@ -188,7 +191,7 @@ function createBingo(container, titleText, inputItems, fontFamily, textColor, bg
   var maxLineHeight = 40;
 
   var table = d.createElement('table');
-  table.style.border = '5px solid ' + bgColor;
+  table.style.border = '5px solid ' + borderColor;
   table.style.color = textColor;
   table.style.fontFamily = fontFamily;
 
@@ -196,8 +199,8 @@ function createBingo(container, titleText, inputItems, fontFamily, textColor, bg
   th.innerHTML = titleText;
   th.style.fontSize = maxLineHeight + 'px';
   th.style.fontWeight = 'bold';
-  th.colSpan = maxCols;
   th.style.background = bgColor;
+  th.colSpan = maxCols;
   table.appendChild(th);
 
   var tbody = d.createElement('tbody');
@@ -218,7 +221,8 @@ function createBingo(container, titleText, inputItems, fontFamily, textColor, bg
 
     for (var col = 0; col < maxCols; col++) {
       var td = d.createElement('td');
-      td.style.border = '8px solid ' + bgColor;
+      td.style.border = '8px solid ' + borderColor;
+      td.style.background = bgColor;
 
       var cell = d.createElement('div');
       cell.style.width = cell.style.height = cellSize + 'px';
@@ -239,10 +243,12 @@ function createBingo(container, titleText, inputItems, fontFamily, textColor, bg
         span.style.fontSize = maxLineHeight + 'px';
         span.style.fontFamily = fontFamily;
         span.innerHTML = "FREE";
-        td.style.color = '#ffffff';
-        td.style.background = bgColor;
+        span.style.color = bgColor;
+        td.style.background = borderColor;
+        cell.style.background = borderColor;
       } else {
         span.innerHTML = items.shift() || '';
+        cell.style.background = bgColor;
 
         for (var size = maxLineHeight; size > 1; size--) {
           span.style.fontSize = size + 'px';
@@ -251,8 +257,6 @@ function createBingo(container, titleText, inputItems, fontFamily, textColor, bg
             break;
           }
         }
-
-        td.style.background = '#ffffff';
       }
     }
   }
