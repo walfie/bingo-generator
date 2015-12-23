@@ -1,4 +1,3 @@
-var button = document.querySelector('.js-submit');
 var input = document.querySelector('.js-input');
 var numInputs = document.querySelector('.js-numInputs');
 
@@ -18,19 +17,30 @@ var numInputs = document.querySelector('.js-numInputs');
   }
 
   updateNumInputs();
+
+  function onClickRandomize(randomize) {
+    var inputs = getInputs();
+    if (randomize) {
+      inputs = shuffleArray(inputs);
+    }
+
+    return function(e) {
+      localStorage.inputs = JSON.stringify(inputs);
+      generate(inputs);
+      e.preventDefault();
+      return false;
+    };
+  }
+
+  document.querySelector('.js-submit-inOrder')
+    .addEventListener('click', onClickRandomize(false));
+  document.querySelector('.js-submit-randomize')
+    .addEventListener('click', onClickRandomize(true));
+
+  input.addEventListener('keyup', throttle(updateNumInputs));
+
+  generate(getInputs());
 }());
-
-generate(getInputs());
-
-input.addEventListener('keyup', throttle(updateNumInputs));
-
-button.addEventListener('click', function(e) {
-  var inputs = getInputs();
-  localStorage.inputs = JSON.stringify(inputs);
-  generate(inputs);
-  e.preventDefault();
-  return false;
-});
 
 function updateNumInputs() {
   numInputs.innerHTML = getInputs().length;
@@ -116,9 +126,8 @@ function createBingo(container, inputItems) {
   var cellSizeWithPadding = cellSize - cellPadding * 2;
   var emptyCell = [Math.floor(maxRows / 2), Math.floor(maxCols / 2)];
 
-  var paddedItems = new Array(Math.max(0, maxRows * maxCols - inputItems.length - 1))
+  var items = new Array(Math.max(0, maxRows * maxCols - inputItems.length - 1))
     .concat(inputItems.slice());
-  var items = shuffleArray(paddedItems);
 
   container.appendChild(table);
 
@@ -150,7 +159,7 @@ function createBingo(container, inputItems) {
         td.style.color = '#ffffff';
         td.style.background = color;
       } else {
-        span.innerHTML = items.pop() || '';
+        span.innerHTML = items.shift() || '';
 
         for (var size = maxLineHeight; size > 1; size--) {
           span.style.fontSize = size + 'px';
