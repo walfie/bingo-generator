@@ -19,10 +19,6 @@ html, body {
   width: 90%;
 }
 
-#submit {
-  font-size: 30px;
-}
-
 .title-input {
   font-size: 30px;
 }
@@ -33,20 +29,38 @@ html, body {
   max-width: 100%;
 }
 
+.submit-buttons-group > button {
+  font-size: 30px;
+  margin-top: 20px;
+}
+
+.settings {
+  line-height: 2em;
+  margin-top: 5px;
+}
 </style>
 </head>
 
 <body>
 <div id="content">
   <div class="column">
-    <div><input value="My Title" placeholder="Title" class="title-input js-title"></input></div>
+    <div><input value="My Title" placeholder="Title" class="title-input js-title" /></div>
     <div>
       <textarea id="input" class="js-input" rows="24" placeholder="Put stuff here, one per line. The first 24 items will be selected."></textarea>
     </div>
     <div><span class="js-numInputs">0</span> items</div>
-    <div><select class="js-fontSelect"></select></div>
-    <button type="button" id="submit" class="js-submit-inOrder">Generate</button>
-    <button type="button" id="submit" class="js-submit-shuffle">Shuffle</button>
+
+    <div class="settings">
+      <div><select class="js-fontSelect"></select></div>
+      <label for="textColor">Text Color</label> <input type="color" name="textColor" class="js-input-textColor" value="#222222" />
+      <label for="bgColor">Background Color</label> <input type="color" name="textColor" class="js-input-bgColor" value="#ffafa6" />
+      <div><button type="button" class="js-restore-defaults">Restore default settings</button></div>
+    </div>
+
+    <div class="submit-buttons-group">
+      <button type="button" class="js-submit-inOrder">Generate</button>
+      <button type="button" class="js-submit-shuffle">Shuffle</button>
+    </div>
   </div>
   <div class="column">
     <div class="js-output"></div>

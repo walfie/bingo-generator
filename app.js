@@ -1,6 +1,8 @@
 var input = document.querySelector('.js-input');
 var titleInput = document.querySelector('.js-title');
 var numInputs = document.querySelector('.js-numInputs');
+var bgColorInput = document.querySelector('.js-input-bgColor');
+var textColorInput = document.querySelector('.js-input-textColor');
 
 var fontOptions = [
   "Arial, Helvetica, sans-serif",
@@ -19,6 +21,15 @@ var fontOptions = [
   "'MS Sans Serif', Geneva, sans-serif",
   "'MS Serif', 'New York', serif"
 ];
+
+function loadJS(url, cb) {
+  var script = document.createElement('script');
+  var ref = document.querySelector('script');
+  script.async = true;
+  script.src = url;
+  ref.parentNode.insertBefore(script, ref);
+  script.onload = cb;
+};
 
 (function init() {
   titleInput.value = localStorage.titleInput || '';
@@ -39,6 +50,16 @@ var fontOptions = [
 
   updateNumInputs();
 
+  function generateFromInputs() {
+    generate(
+      titleInput.value,
+      getInputs(),
+      fontInput.value,
+      textColorInput.value,
+      bgColorInput.value
+    );
+  }
+
   function onClickShuffle(shuffle) {
     return function(e) {
       var inputs = getInputs();
@@ -50,8 +71,10 @@ var fontOptions = [
 
       localStorage.titleInput = titleInput.value;
       localStorage.fontInput = fontInput.value;
+      localStorage.textColorInput = textColorInput.value;
+      localStorage.bgColorInput = bgColorInput.value;
       localStorage.inputs = JSON.stringify(inputs);
-      generate(titleInput.value, inputs, fontInput.value);
+      generateFromInputs();
       e.preventDefault();
       return false;
     };
@@ -61,6 +84,13 @@ var fontOptions = [
     .addEventListener('click', onClickShuffle(false));
   document.querySelector('.js-submit-shuffle')
     .addEventListener('click', onClickShuffle(true));
+  document.querySelector('.js-restore-defaults')
+    .addEventListener('click', function() {
+      var inputs = localStorage.inputs;
+      localStorage.clear();
+      localStorage.inputs = inputs;
+      document.location.reload();
+    });
 
   var fontInput = document.querySelector('.js-fontSelect');
   fontOptions.forEach(function(font) {
@@ -75,7 +105,7 @@ var fontOptions = [
 
   input.addEventListener('keyup', throttle(updateNumInputs));
 
-  generate(titleInput.value, getInputs(), fontInput.value);
+  generateFromInputs();
 }());
 
 function updateNumInputs() {
@@ -88,10 +118,10 @@ function getInputs() {
     .filter(function(x) { return x.trim() != ''; });
 }
 
-function generate(title, input, font) {
+function generate(title, input, font, textColor, bgColor) {
   var container = document.querySelector('.js-tmpOutput');
 
-  var bingo = createBingo(container, title, input, font);
+  var bingo = createBingo(container, title, input, font, textColor, bgColor);
   var table = bingo.querySelector('table');
 
   // Sometimes canvas gets cut off at the bottom
@@ -156,22 +186,19 @@ function makeSvg(content) {
   return svg;
 }
 
-function createBingo(container, titleText, inputItems, fontFamily) {
+function createBingo(container, titleText, inputItems, fontFamily, textColor, bgColor) {
   var d = document;
 
   // This stuff should really be configurable. But nah.
   var maxRows = 5;
   var maxCols = 5;
-  var bgColor = '#ffafa6';
   var cellSize = 150;
   var cellPadding = 10;
   var maxLineHeight = 40;
-  var fontColor = '#222222';
-
 
   var table = d.createElement('table');
   table.style.border = '5px solid ' + bgColor;
-  table.style.color = fontColor;
+  table.style.color = textColor;
   table.style.fontFamily = fontFamily;
 
   var th = d.createElement('th');
