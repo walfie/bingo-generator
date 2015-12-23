@@ -22,15 +22,6 @@ var fontOptions = [
   "'MS Serif', 'New York', serif"
 ];
 
-function loadJS(url, cb) {
-  var script = document.createElement('script');
-  var ref = document.querySelector('script');
-  script.async = true;
-  script.src = url;
-  ref.parentNode.insertBefore(script, ref);
-  script.onload = cb;
-};
-
 (function init() {
   titleInput.value = localStorage.titleInput || '';
 
@@ -244,7 +235,9 @@ function createBingo(container, titleText, inputItems, fontFamily, textColor, bg
       tr.appendChild(td);
 
       if (row == emptyCell[0] && col == emptyCell[1]) {
-        span.style.font = 'bold '+ maxLineHeight + 'px sans';
+        span.style.fontWeight = 'bold';
+        span.style.fontSize = maxLineHeight + 'px';
+        span.style.fontFamily = fontFamily;
         span.innerHTML = "FREE";
         td.style.color = '#ffffff';
         td.style.background = bgColor;
