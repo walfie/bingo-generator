@@ -1,7 +1,50 @@
-main();
+var button = document.querySelector('.js-submit');
+var input = document.querySelector('.js-input');
+var numInputs = document.querySelector('.js-numInputs');
 
-function main() {
-  var bingo = createBingo(['some', 'dummy', 'values']);
+(function() {
+  var storedInputString = localStorage.inputs;
+  var stored = [];
+  try {
+    stored = JSON.parse(localStorage.inputs);
+  } catch(e) {
+    stored = [];
+  }
+
+  if (stored.constructor === Array) {
+    input.value = stored.join('\n');
+  } else {
+    localStorage.inputs = [];
+  }
+}());
+
+generate(getInputs());
+
+input.addEventListener('keyup', throttle(function() {
+  numInputs.innerHTML = getInputs().length;
+}, 100));
+
+button.addEventListener('click', function(e) {
+  var inputs = getInputs();
+  localStorage.inputs = JSON.stringify(inputs);
+  generate(inputs);
+  e.preventDefault();
+  return false;
+});
+
+function getInputs() {
+  return input.value
+    .split('\n')
+    .filter(function(x) { return x.trim() != ''; });
+}
+
+function generate(input) {
+  var container = document.querySelector('.js-output');
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+
+  var bingo = createBingo(container, input);
   var table = bingo.querySelector('table');
 
   // Sometimes canvas gets cut off at the bottom
@@ -14,13 +57,12 @@ function main() {
 
   var svg = makeSvg(table);
   var svgString = new XMLSerializer().serializeToString(svg);
-  document.body.removeChild(bingo);
 
   var domUrl = window.URL || window.webkitURL || window;
   var img = new Image();
   var svgBlob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
   var url = domUrl.createObjectURL(svgBlob);
-  document.body.appendChild(canvas);
+  container.appendChild(canvas);
 
   img.src = url;
   img.onload = function () {
@@ -51,18 +93,7 @@ function makeSvg(content) {
   return svg;
 }
 
-// http://stackoverflow.com/a/12646864/1887090
-function shuffleArray(array) {
-  for (var i = array.length - 1; i > 0; i--) {
-    var j = Math.floor(Math.random() * (i + 1));
-    var temp = array[i];
-    array[i] = array[j];
-    array[j] = temp;
-  }
-  return array;
-}
-
-function createBingo(inputItems) {
+function createBingo(container, inputItems) {
   var d = document;
 
   var table = d.createElement('table');
@@ -80,13 +111,12 @@ function createBingo(inputItems) {
 
   var cellSizeWithPadding = cellSize - cellPadding * 2;
   var emptyCell = [Math.floor(maxRows / 2), Math.floor(maxCols / 2)];
-  var paddedItems = new Array(maxRows * maxCols - inputItems.length - 1)
+
+  var paddedItems = new Array(Math.max(0, maxRows * maxCols - inputItems.length - 1))
     .concat(inputItems.slice());
   var items = shuffleArray(paddedItems);
 
-  var container = d.createElement('div');
   container.appendChild(table);
-  d.body.appendChild(container);
 
   for (var row = 0; row < maxRows; row++) {
     var tr = d.createElement('tr');
@@ -132,5 +162,28 @@ function createBingo(inputItems) {
   }
 
   return container;
+}
+
+// http://jsfiddle.net/jonathansampson/m7G64/
+function throttle (callback, limit) {
+  var wait = false;
+  return function() {
+    if (!wait) {
+      callback.call();
+      wait = true;
+      setTimeout(function () { wait = false; }, limit);
+    }
+  }
+}
+
+// http://stackoverflow.com/a/12646864/1887090
+function shuffleArray(array) {
+  for (var i = array.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
+  }
+  return array;
 }
 
