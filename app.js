@@ -2,6 +2,24 @@ var input = document.querySelector('.js-input');
 var titleInput = document.querySelector('.js-title');
 var numInputs = document.querySelector('.js-numInputs');
 
+var fontOptions = [
+  "Arial, Helvetica, sans-serif",
+  "'Arial Black', Gadget, sans-serif",
+  "'Comic Sans MS', Textile, cursive",
+  "'Courier New', Courier, monospace",
+  "Georgia, 'Times New Roman', Times, serif",
+  "Impact, Charcoal, sans-serif",
+  "'Lucida Console', Monaco, monospace",
+  "'Lucida Sans Unicode', 'Lucida Grande', sans-serif",
+  "'Palatino Linotype', 'Book Antiqua', Palatino, serif",
+  "Tahoma, Geneva, sans-serif",
+  "'Times New Roman', Times, serif",
+  "'Trebuchet MS', Helvetica, sans-serif",
+  "Verdana, Geneva, sans-serif",
+  "'MS Sans Serif', Geneva, sans-serif",
+  "'MS Serif', 'New York', serif"
+];
+
 (function init() {
   titleInput.value = localStorage.titleInput || '';
 
@@ -21,31 +39,43 @@ var numInputs = document.querySelector('.js-numInputs');
 
   updateNumInputs();
 
-  function onClickRandomize(randomize) {
+  function onClickShuffle(shuffle) {
     return function(e) {
       var inputs = getInputs();
-      if (randomize) {
+      if (shuffle) {
         inputs = shuffleArray(inputs);
         console.log(inputs);
       }
       input.value = inputs.join('\n');
 
       localStorage.titleInput = titleInput.value;
+      localStorage.fontInput = fontInput.value;
       localStorage.inputs = JSON.stringify(inputs);
-      generate(titleInput.value, inputs);
+      generate(titleInput.value, inputs, fontInput.value);
       e.preventDefault();
       return false;
     };
   }
 
   document.querySelector('.js-submit-inOrder')
-    .addEventListener('click', onClickRandomize(false));
-  document.querySelector('.js-submit-randomize')
-    .addEventListener('click', onClickRandomize(true));
+    .addEventListener('click', onClickShuffle(false));
+  document.querySelector('.js-submit-shuffle')
+    .addEventListener('click', onClickShuffle(true));
+
+  var fontInput = document.querySelector('.js-fontSelect');
+  fontOptions.forEach(function(font) {
+    var opt = document.createElement('option');
+    opt.value = font;
+    opt.innerHTML = font;
+    if (localStorage.fontInput == font) {
+      opt.selected = true;
+    }
+    fontInput.appendChild(opt);
+  });
 
   input.addEventListener('keyup', throttle(updateNumInputs));
 
-  generate(titleInput.value, getInputs());
+  generate(titleInput.value, getInputs(), fontInput.value);
 }());
 
 function updateNumInputs() {
@@ -58,10 +88,10 @@ function getInputs() {
     .filter(function(x) { return x.trim() != ''; });
 }
 
-function generate(title, input) {
+function generate(title, input, font) {
   var container = document.querySelector('.js-tmpOutput');
 
-  var bingo = createBingo(container, title, input);
+  var bingo = createBingo(container, title, input, font);
   var table = bingo.querySelector('table');
 
   // Sometimes canvas gets cut off at the bottom
@@ -126,7 +156,7 @@ function makeSvg(content) {
   return svg;
 }
 
-function createBingo(container, titleText, inputItems) {
+function createBingo(container, titleText, inputItems, fontFamily) {
   var d = document;
 
   // This stuff should really be configurable. But nah.
@@ -142,6 +172,7 @@ function createBingo(container, titleText, inputItems) {
   var table = d.createElement('table');
   table.style.border = '5px solid ' + bgColor;
   table.style.color = fontColor;
+  table.style.fontFamily = fontFamily;
 
   var th = d.createElement('th');
   th.innerHTML = titleText;
