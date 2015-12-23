@@ -1,7 +1,10 @@
 var input = document.querySelector('.js-input');
+var titleInput = document.querySelector('.js-title');
 var numInputs = document.querySelector('.js-numInputs');
 
 (function init() {
+  titleInput.value = localStorage.titleInput || '';
+
   var storedInputString = localStorage.inputs;
   var stored = [];
   try {
@@ -19,14 +22,17 @@ var numInputs = document.querySelector('.js-numInputs');
   updateNumInputs();
 
   function onClickRandomize(randomize) {
-    var inputs = getInputs();
-    if (randomize) {
-      inputs = shuffleArray(inputs);
-    }
-
     return function(e) {
+      var inputs = getInputs();
+      if (randomize) {
+        inputs = shuffleArray(inputs);
+        console.log(inputs);
+      }
+      input.value = inputs.join('\n');
+
+      localStorage.titleInput = titleInput.value;
       localStorage.inputs = JSON.stringify(inputs);
-      generate(inputs);
+      generate(titleInput.value, inputs);
       e.preventDefault();
       return false;
     };
@@ -39,7 +45,7 @@ var numInputs = document.querySelector('.js-numInputs');
 
   input.addEventListener('keyup', throttle(updateNumInputs));
 
-  generate(getInputs());
+  generate(titleInput.value, getInputs());
 }());
 
 function updateNumInputs() {
@@ -52,13 +58,10 @@ function getInputs() {
     .filter(function(x) { return x.trim() != ''; });
 }
 
-function generate(input) {
-  var container = document.querySelector('.js-output');
-  while (container.firstChild) {
-    container.removeChild(container.firstChild);
-  }
+function generate(title, input) {
+  var container = document.querySelector('.js-tmpOutput');
 
-  var bingo = createBingo(container, input);
+  var bingo = createBingo(container, title, input);
   var table = bingo.querySelector('table');
 
   // Sometimes canvas gets cut off at the bottom
@@ -68,6 +71,7 @@ function generate(input) {
   var ctx = canvas.getContext('2d');
   canvas.width = table.offsetWidth;
   canvas.height = table.offsetHeight;
+  canvas.style.maxWidth = '100%';
 
   var svg = makeSvg(table);
   var svgString = new XMLSerializer().serializeToString(svg);
@@ -76,13 +80,28 @@ function generate(input) {
   var img = new Image();
   var svgBlob = new Blob([svgString], {type: 'image/svg+xml;charset=utf-8'});
   var url = domUrl.createObjectURL(svgBlob);
-  container.appendChild(canvas);
+
+  while (container.firstChild) {
+    container.removeChild(container.firstChild);
+  }
+
+  var outputDiv = document.querySelector('.js-output')
+  removeChildNodes(outputDiv).appendChild(canvas);
 
   img.src = url;
   img.onload = function () {
     ctx.drawImage(img, 0, 0);
     domUrl.revokeObjectURL(url);
+
+    removeChildNodes(container);
   }
+}
+
+function removeChildNodes(node) {
+  while (node.firstChild) {
+    node.removeChild(node.firstChild)
+  }
+  return node;
 }
 
 function makeSvg(content) {
@@ -107,21 +126,34 @@ function makeSvg(content) {
   return svg;
 }
 
-function createBingo(container, inputItems) {
+function createBingo(container, titleText, inputItems) {
   var d = document;
-
-  var table = d.createElement('table');
-  var tbody = d.createElement('tbody');
-  table.appendChild(tbody);
-  table.style.borderCollapse = 'collapse';
 
   // This stuff should really be configurable. But nah.
   var maxRows = 5;
   var maxCols = 5;
-  var color = '#ffafa6';
+  var bgColor = '#ffafa6';
   var cellSize = 150;
   var cellPadding = 10;
   var maxLineHeight = 50;
+  var fontColor = '#222222';
+
+
+  var table = d.createElement('table');
+  table.style.border = '5px solid ' + bgColor;
+  table.style.color = fontColor;
+
+  var th = d.createElement('th');
+  th.innerHTML = titleText;
+  th.style.fontSize = maxLineHeight + 'px';
+  th.style.fontWeight = 'bold';
+  th.colSpan = maxCols;
+  th.style.background = bgColor;
+  table.appendChild(th);
+
+  var tbody = d.createElement('tbody');
+  table.appendChild(tbody);
+  table.style.borderCollapse = 'collapse';
 
   var cellSizeWithPadding = cellSize - cellPadding * 2;
   var emptyCell = [Math.floor(maxRows / 2), Math.floor(maxCols / 2)];
@@ -137,7 +169,7 @@ function createBingo(container, inputItems) {
 
     for (var col = 0; col < maxCols; col++) {
       var td = d.createElement('td');
-      td.style.border = '8px solid ' + color;
+      td.style.border = '8px solid ' + bgColor;
 
       var cell = d.createElement('div');
       cell.style.width = cell.style.height = cellSize + 'px';
@@ -157,7 +189,7 @@ function createBingo(container, inputItems) {
         span.style.font = 'bold '+ maxLineHeight + 'px sans';
         span.innerHTML = "FREE";
         td.style.color = '#ffffff';
-        td.style.background = color;
+        td.style.background = bgColor;
       } else {
         span.innerHTML = items.shift() || '';
 
