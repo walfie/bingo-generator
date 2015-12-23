@@ -165,7 +165,7 @@ function createBingo(container, titleText, inputItems, fontFamily) {
   var bgColor = '#ffafa6';
   var cellSize = 150;
   var cellPadding = 10;
-  var maxLineHeight = 50;
+  var maxLineHeight = 40;
   var fontColor = '#222222';
 
 
@@ -189,8 +189,8 @@ function createBingo(container, titleText, inputItems, fontFamily) {
   var cellSizeWithPadding = cellSize - cellPadding * 2;
   var emptyCell = [Math.floor(maxRows / 2), Math.floor(maxCols / 2)];
 
-  var items = new Array(Math.max(0, maxRows * maxCols - inputItems.length - 1))
-    .concat(inputItems.slice());
+  var items = inputItems.slice()
+    .concat(new Array(Math.max(0, maxRows * maxCols - inputItems.length - 1)))
 
   container.appendChild(table);
 
