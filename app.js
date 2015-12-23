@@ -1,5 +1,5 @@
-var input = document.querySelector('.js-input');
-var titleInput = document.querySelector('.js-title');
+var itemInputs = document.querySelector('.js-input-items');
+var titleInput = document.querySelector('.js-input-title');
 var numInputs = document.querySelector('.js-numInputs');
 var bgColorInput = document.querySelector('.js-input-bgColor');
 var textColorInput = document.querySelector('.js-input-textColor');
@@ -34,18 +34,17 @@ function loadJS(url, cb) {
 (function init() {
   titleInput.value = localStorage.titleInput || '';
 
-  var storedInputString = localStorage.inputs;
   var stored = [];
   try {
-    stored = JSON.parse(localStorage.inputs);
+    stored = JSON.parse(localStorage.itemInputs);
   } catch(e) {
     stored = [];
   }
 
   if (stored.constructor === Array) {
-    input.value = stored.join('\n');
+    itemInputs.value = stored.join('\n');
   } else {
-    localStorage.inputs = [];
+    localStorage.itemInputs = [];
   }
 
   updateNumInputs();
@@ -53,7 +52,7 @@ function loadJS(url, cb) {
   function generateFromInputs() {
     generate(
       titleInput.value,
-      getInputs(),
+      getItems(),
       fontInput.value,
       textColorInput.value,
       bgColorInput.value
@@ -62,18 +61,17 @@ function loadJS(url, cb) {
 
   function onClickShuffle(shuffle) {
     return function(e) {
-      var inputs = getInputs();
+      var items = getItems();
       if (shuffle) {
-        inputs = shuffleArray(inputs);
-        console.log(inputs);
+        items = shuffleArray(items);
       }
-      input.value = inputs.join('\n');
+      itemInputs.value = items.join('\n');
 
       localStorage.titleInput = titleInput.value;
       localStorage.fontInput = fontInput.value;
       localStorage.textColorInput = textColorInput.value;
       localStorage.bgColorInput = bgColorInput.value;
-      localStorage.inputs = JSON.stringify(inputs);
+      localStorage.itemInputs = JSON.stringify(items);
       generateFromInputs();
       e.preventDefault();
       return false;
@@ -86,13 +84,15 @@ function loadJS(url, cb) {
     .addEventListener('click', onClickShuffle(true));
   document.querySelector('.js-restore-defaults')
     .addEventListener('click', function() {
-      var inputs = localStorage.inputs;
+      var itemInputs = localStorage.itemInputs;
+      var title = localStorage.title;
       localStorage.clear();
-      localStorage.inputs = inputs;
+      localStorage.title = title;
+      localStorage.itemInputs = itemInputs;
       document.location.reload();
     });
 
-  var fontInput = document.querySelector('.js-fontSelect');
+  var fontInput = document.querySelector('.js-input-fontSelect');
   fontOptions.forEach(function(font) {
     var opt = document.createElement('option');
     opt.value = font;
@@ -109,19 +109,19 @@ function loadJS(url, cb) {
 }());
 
 function updateNumInputs() {
-  numInputs.innerHTML = getInputs().length;
+  numInputs.innerHTML = getItems().length;
 }
 
-function getInputs() {
-  return input.value
+function getItems() {
+  return itemInputs.value
     .split('\n')
     .filter(function(x) { return x.trim() != ''; });
 }
 
-function generate(title, input, font, textColor, bgColor) {
+function generate(title, items, font, textColor, bgColor) {
   var container = document.querySelector('.js-tmpOutput');
 
-  var bingo = createBingo(container, title, input, font, textColor, bgColor);
+  var bingo = createBingo(container, title, items, font, textColor, bgColor);
   var table = bingo.querySelector('table');
 
   // Sometimes canvas gets cut off at the bottom
